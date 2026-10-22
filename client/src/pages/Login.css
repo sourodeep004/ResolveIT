@@ -1,0 +1,1081 @@
+/* ==========================================================
+   RESOLVEIT — PREMIUM SAAS LOGIN  (zoom-proof)
+   File: client/src/pages/Login.css
+
+   How it scales:
+   The desktop design is a 1672 x 941 "stage". 1em on .resolve-login
+   equals 10 design pixels and is derived from whichever of the
+   viewport width/height is the limiting one, so the whole layout
+   shrinks or grows together and never wraps or overflows when the
+   browser is zoomed. Below 1024px (or at high zoom) it switches to
+   a stacked layout using normal px sizes.
+
+   The stage has a MIN height (not a fixed one), so if the content is
+   ever taller than the window the page grows and scrolls instead of
+   clipping the bottom.
+   ========================================================== */
+
+.resolve-login {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  height: auto;
+  overflow-x: hidden;
+  overflow-y: visible;
+  background: #050d2b;
+  color: #111c38;
+  font-family: Inter, "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-size: min(0.598vw, 1.0627vh);
+  font-size: min(0.598vw, 1.0627dvh);
+}
+
+.resolve-login *,
+.resolve-login *::before,
+.resolve-login *::after {
+  box-sizing: border-box;
+}
+
+/* ---------------------- BACKGROUND ---------------------- */
+
+.resolve-login__backdrop {
+  position: absolute;
+  z-index: -2;
+  inset: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(55% 55% at 6% 0%, rgba(36, 92, 255, 0.4), transparent 62%),
+    radial-gradient(55% 65% at 100% 100%, rgba(116, 72, 255, 0.6), transparent 62%),
+    radial-gradient(40% 40% at 0% 100%, rgba(96, 64, 255, 0.4), transparent 66%),
+    radial-gradient(35% 45% at 70% 10%, rgba(40, 80, 255, 0.18), transparent 70%),
+    linear-gradient(135deg, #040a22 0%, #071856 52%, #0a1a74 100%);
+}
+
+.resolve-login__backdrop::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(
+    rgba(140, 170, 255, 0.35) 1px,
+    transparent 1.5px
+  );
+  background-size: 30px 30px;
+  opacity: 0.55;
+  -webkit-mask-image: radial-gradient(70% 70% at 40% 45%, #000, transparent 100%);
+  mask-image: radial-gradient(70% 70% at 40% 45%, #000, transparent 100%);
+}
+
+/* The curves live on the same 1672x941 stage as the content */
+.resolve-login__curves {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 167.2em;
+  height: 94.1em;
+  overflow: visible;
+  transform: translate(-50%, -50%);
+}
+
+/* ------------------------ STAGE ------------------------ */
+
+.resolve-login__layout {
+  position: relative;
+  display: grid;
+  grid-template-columns: 51.4em 33.8em 60.6em;
+  grid-template-rows: auto;
+  width: 167.2em;
+  height: auto;
+  min-height: 94.1em;
+  padding: 0 9.6em 4em 11.8em;
+}
+
+/* -------------------- LEFT INTRODUCTION -------------------- */
+
+.resolve-login__intro {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-self: start;
+  min-width: 0;
+  padding-top: 7em;
+  color: #fff;
+}
+
+.resolve-login__brand {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 1.8em;
+  color: #fff;
+  text-decoration: none;
+}
+
+.resolve-login__brand-icon {
+  display: grid;
+  place-items: center;
+  width: 7.2em;
+  height: 7.2em;
+  flex: 0 0 auto;
+  border-radius: 2em;
+  color: #fff;
+  background: linear-gradient(145deg, #2f8dff, #1f4bf0);
+  box-shadow:
+    0 1.2em 3.2em rgba(18, 71, 255, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.resolve-login__brand-icon svg {
+  width: 3.4em;
+  height: 3.4em;
+}
+
+.resolve-login__brand-name {
+  color: #fff;
+  font-size: 4.4em;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.resolve-login__brand-name span {
+  color: #2f7bff;
+}
+
+.resolve-login__eyebrow {
+  margin: 2.8em 0 3.2em;
+  color: #b9c9f2;
+  font-size: 1.3em;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+}
+
+.resolve-login__headline {
+  margin: 0;
+  color: #fff;
+  font-size: 6.2em;
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+  white-space: nowrap;
+}
+
+.resolve-login__headline span {
+  color: #2f9bff;
+  background: linear-gradient(100deg, #2f7bff 0%, #1fb4ff 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.resolve-login__description {
+  max-width: 44em;
+  margin: 2em 0 2.8em;
+  color: #c3d1f0;
+  font-size: 2em;
+  line-height: 1.5;
+}
+
+.resolve-login__features {
+  display: grid;
+  gap: 2.2em;
+  max-width: 60em;
+}
+
+.resolve-login__feature {
+  display: flex;
+  align-items: center;
+  gap: 1.8em;
+  min-width: 0;
+}
+
+.resolve-login__feature-icon {
+  display: grid;
+  place-items: center;
+  width: 6.2em;
+  height: 6.2em;
+  flex: 0 0 auto;
+  border: 1px solid rgba(76, 123, 255, 0.4);
+  border-radius: 1.6em;
+  color: #3eb0ff;
+  background: linear-gradient(
+    145deg,
+    rgba(28, 72, 190, 0.55),
+    rgba(9, 28, 90, 0.85)
+  );
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.resolve-login__feature-icon svg {
+  width: 2.6em;
+  height: 2.6em;
+}
+
+.resolve-login__feature h3 {
+  margin: 0 0 0.3em;
+  color: #fff;
+  font-size: 1.9em;
+  font-weight: 650;
+}
+
+.resolve-login__feature p {
+  margin: 0;
+  color: #b7c7ec;
+  font-size: 1.7em;
+  line-height: 1.4;
+}
+
+.resolve-login__trust {
+  max-width: 60em;
+  margin-top: 3em;
+}
+
+.resolve-login__trust-line {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    rgba(103, 148, 255, 0.5),
+    rgba(103, 148, 255, 0.04)
+  );
+}
+
+.resolve-login__trust > p {
+  margin: 2.4em 0 1.9em;
+  color: #c3d1f5;
+  font-size: 1.3em;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+}
+
+.resolve-login__trust-bottom {
+  display: flex;
+  align-items: center;
+  gap: 2em;
+  color: #c3d1f0;
+  font-size: 1.8em;
+}
+
+.resolve-login__trust-divider {
+  width: 1px;
+  height: 3.8rem;
+  height: 2.1em;
+  background: rgba(150, 178, 255, 0.35);
+}
+
+.resolve-login__avatars {
+  display: flex;
+  align-items: center;
+  font-size: 1em;
+}
+
+.resolve-login__avatar {
+  display: grid;
+  place-items: center;
+  width: 2.9em;
+  height: 2.9em;
+  margin-left: -0.55em;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 0.8em;
+  font-weight: 700;
+}
+
+.resolve-login__avatar:first-child {
+  margin-left: 0;
+}
+
+.resolve-login__avatar svg {
+  width: 1.2em;
+  height: 1.2em;
+}
+
+.resolve-login__avatar--1 {
+  background: linear-gradient(145deg, #7a8cb8, #3f4f7a);
+}
+
+.resolve-login__avatar--2 {
+  background: linear-gradient(145deg, #d99a8a, #8a4f55);
+}
+
+.resolve-login__avatar--3 {
+  background: linear-gradient(145deg, #8fa3c9, #475c8a);
+}
+
+.resolve-login__avatar--more {
+  border-color: rgba(120, 150, 255, 0.35);
+  background: rgba(20, 40, 110, 0.8);
+  color: #d5e0ff;
+}
+
+/* ------------------ FLOATING GLASS CARDS ------------------ */
+
+.resolve-login__showcase {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  height: 100%;
+}
+
+.rl-glass {
+  position: absolute;
+  padding: 2em 2.2em;
+  border: 1px solid rgba(130, 168, 255, 0.28);
+  border-radius: 2.2em;
+  color: #fff;
+  background: linear-gradient(
+    145deg,
+    rgba(48, 92, 220, 0.3),
+    rgba(10, 26, 86, 0.62)
+  );
+  box-shadow:
+    0 2.4em 6em rgba(2, 8, 40, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.rl-glass--chart {
+  top: 7.8em;
+  left: -0.5em;
+  width: 26em;
+  height: 20.6em;
+  transform: perspective(90em) rotateX(6deg) rotateY(-8deg) rotateZ(-5deg);
+}
+
+.rl-glass__title {
+  font-size: 1.6em;
+  font-weight: 600;
+}
+
+.rl-glass__metric {
+  display: flex;
+  align-items: center;
+  gap: 0.3em;
+  margin-top: 0.2em;
+  color: #4de3b0;
+  font-size: 2.6em;
+  font-weight: 800;
+}
+
+.rl-glass__metric svg {
+  width: 0.8em;
+  height: 0.8em;
+}
+
+.rl-glass__chart {
+  position: absolute;
+  right: 1.8em;
+  bottom: 1.6em;
+  left: 1.8em;
+  width: calc(100% - 3.6em);
+  height: 9.6em;
+}
+
+.rl-glass--list {
+  top: 39.2em;
+  left: 0.5em;
+  display: grid;
+  gap: 1.8em;
+  width: 28.5em;
+  padding: 2.4em 2.6em;
+  transform: perspective(90em) rotateX(3deg) rotateY(-5deg) rotateZ(-1.5deg);
+}
+
+.rl-row {
+  display: flex;
+  align-items: center;
+  gap: 1.6em;
+}
+
+.rl-row + .rl-row {
+  padding-top: 1.8em;
+  border-top: 1px solid rgba(130, 168, 255, 0.14);
+}
+
+.rl-row__avatar {
+  width: 2.8em;
+  height: 2.8em;
+  flex: 0 0 2.8em;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #5b6f9e, #2c3b66);
+}
+
+.rl-row__lines {
+  display: grid;
+  flex: 1;
+  gap: 0.7em;
+}
+
+.rl-row__lines i {
+  display: block;
+  height: 0.6em;
+  border-radius: 99px;
+  background: rgba(100, 140, 255, 0.35);
+}
+
+.rl-row__lines i:first-child {
+  width: 82%;
+  background: linear-gradient(90deg, #3b82ff, #5a9bff);
+}
+
+.rl-row__lines i:last-child {
+  width: 50%;
+}
+
+.rl-row__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8em;
+  font-size: 1.4em;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.rl-row__status b {
+  width: 0.65em;
+  height: 0.65em;
+  border-radius: 50%;
+}
+
+.rl-row__status--green b {
+  background: #2de2a6;
+}
+
+.rl-row__status--blue b {
+  background: #3aa0ff;
+}
+
+.rl-row__status--orange b {
+  background: #ffb02e;
+}
+
+.rl-glass--sla {
+  top: 62.5em;
+  left: -1.5em;
+  display: flex;
+  align-items: center;
+  gap: 1.8em;
+  width: 23.5em;
+  height: 16em;
+  padding: 2.2em 2.4em;
+  transform: perspective(90em) rotateX(5deg) rotateY(-9deg) rotateZ(-3deg);
+}
+
+.rl-sla__shield {
+  display: grid;
+  place-items: center;
+  width: 5.4em;
+  height: 5.8em;
+  flex: 0 0 5.4em;
+  border: 1px solid rgba(63, 240, 180, 0.35);
+  border-radius: 1.4em;
+  color: #3ff0b4;
+  background: linear-gradient(
+    145deg,
+    rgba(16, 150, 120, 0.55),
+    rgba(8, 70, 80, 0.7)
+  );
+}
+
+.rl-sla__shield svg {
+  width: 3em;
+  height: 3em;
+}
+
+.rl-sla__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.rl-sla__label {
+  color: #dbe6ff;
+  font-size: 1.4em;
+  font-weight: 500;
+}
+
+.rl-sla__value {
+  margin: 0.2em 0 0.7em;
+  font-size: 2.2em;
+  font-weight: 700;
+}
+
+.rl-sla__bar {
+  height: 0.8em;
+  overflow: hidden;
+  border-radius: 99px;
+  background: rgba(130, 168, 255, 0.2);
+}
+
+.rl-sla__bar span {
+  display: block;
+  width: 88%;
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, #14e0a0, #5af2c4);
+  box-shadow: 0 0 1.2em rgba(20, 224, 160, 0.6);
+}
+
+/* ---------------------- LOGIN CARD ---------------------- */
+
+.resolve-login__form-area {
+  position: relative;
+  z-index: 2;
+  align-self: start;
+  min-width: 0;
+  margin-top: 8em;
+  padding-left: 5.8em;
+}
+
+.resolve-login__card {
+  width: 100%;
+  padding: 4.2em 6.2em 4.2em;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 3em;
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.99),
+    rgba(244, 247, 255, 0.98)
+  );
+  box-shadow:
+    0 3em 9em rgba(0, 7, 40, 0.38),
+    0 0.4em 1.4em rgba(19, 45, 113, 0.08),
+    inset 0 1px 0 #fff;
+}
+
+.resolve-login__card-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.resolve-login__card-brand-row {
+  display: flex;
+  align-items: center;
+  gap: 1.6em;
+}
+
+.resolve-login__card-logo {
+  display: grid;
+  place-items: center;
+  width: 6.8em;
+  height: 6.8em;
+  border-radius: 1.8em;
+  color: #245cff;
+  background: linear-gradient(145deg, #e8efff, #d8e4ff);
+}
+
+.resolve-login__card-logo svg {
+  width: 3.2em;
+  height: 3.2em;
+}
+
+.resolve-login__card-brand-name {
+  color: #0f1a36;
+  font-size: 3.6em;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.resolve-login__card-brand-name span {
+  color: #245cff;
+}
+
+.resolve-login__card-brand > p {
+  margin: 0.9em 0 0;
+  color: #6f7fa8;
+  font-size: 1.1em;
+  font-weight: 600;
+  letter-spacing: 0.26em;
+}
+
+.resolve-login__separator {
+  height: 1px;
+  margin: 2.6em 0 3em;
+  background: #e3e8f5;
+}
+
+.resolve-login__welcome {
+  margin-bottom: 2.2em;
+}
+
+.resolve-login__welcome h2 {
+  margin: 0 0 0.4em;
+  color: #0f1a36;
+  font-size: 3.8em;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+}
+
+.resolve-login__welcome > p {
+  margin: 0;
+  color: #6b7aa3;
+  font-size: 1.8em;
+}
+
+/* ------------------------- FORM ------------------------- */
+
+.resolve-login__form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7em;
+}
+
+.resolve-login__label {
+  display: block;
+  color: #1c2745;
+  font-size: 1.4em;
+  font-weight: 650;
+}
+
+.resolve-login__label:not(:first-child) {
+  margin-top: 1.4em;
+}
+
+.resolve-login__input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 1.4em;
+  width: 100%;
+  min-height: 5.4em;
+  padding: 0 1.6em;
+  border: 1px solid #dde4f6;
+  border-radius: 1.2em;
+  color: #6f7fa6;
+  background: #fff;
+  box-shadow: 0 0.2em 0.5em rgba(29, 55, 109, 0.04);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.resolve-login__input-wrap:focus-within {
+  border-color: #5681ff;
+  box-shadow:
+    0 0 0 0.4em rgba(59, 104, 255, 0.12),
+    0 0.4em 1.4em rgba(37, 82, 200, 0.06);
+}
+
+.resolve-login__input-wrap > svg {
+  width: 2.2em;
+  height: 2.2em;
+  flex: 0 0 auto;
+}
+
+.resolve-login__input-wrap input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  min-height: 4.4em;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  color: #172442;
+  background: transparent;
+  box-shadow: none;
+  font: inherit;
+  font-size: 1.5em;
+}
+
+.resolve-login__input-wrap input::placeholder {
+  color: #8a97b5;
+  opacity: 1;
+}
+
+.resolve-login__input-wrap input:-webkit-autofill,
+.resolve-login__input-wrap input:-webkit-autofill:hover,
+.resolve-login__input-wrap input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #172442;
+  box-shadow: 0 0 0 1000px #fff inset;
+  transition: background-color 9999s ease-out;
+}
+
+.resolve-login__password-toggle {
+  display: grid;
+  place-items: center;
+  flex: 0 0 3.4em;
+  width: 3.4em;
+  height: 3.4em;
+  padding: 0;
+  border: 0;
+  border-radius: 0.8em;
+  color: #6f7fa6;
+  background: transparent;
+  cursor: pointer;
+  transition: color 160ms ease, background 160ms ease;
+}
+
+.resolve-login__password-toggle svg {
+  width: 2em;
+  height: 2em;
+}
+
+.resolve-login__password-toggle:hover {
+  color: #285bff;
+  background: #eef3ff;
+}
+
+.resolve-login__submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1em;
+  width: 100%;
+  min-height: 5.6em;
+  margin-top: 2.3em;
+  padding: 1.2em 2em;
+  border: 0;
+  border-radius: 1.2em;
+  color: #fff;
+  background: linear-gradient(100deg, #1f7bff 0%, #1a45f2 100%);
+  box-shadow:
+    0 1em 2.4em rgba(31, 90, 255, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  font-family: inherit;
+  font-size: 1.7em;
+  font-weight: 650;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    filter 160ms ease;
+}
+
+.resolve-login__submit svg {
+  width: 1.2em;
+  height: 1.2em;
+}
+
+.resolve-login__submit:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+  box-shadow: 0 1.4em 2.8em rgba(31, 90, 255, 0.36);
+}
+
+.resolve-login__submit:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.resolve-login__submit:focus-visible,
+.resolve-login__password-toggle:focus-visible,
+.resolve-login__register a:focus-visible {
+  outline: 3px solid rgba(73, 117, 255, 0.5);
+  outline-offset: 3px;
+}
+
+.resolve-login__submit:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+/* ------------------------ MESSAGES ------------------------ */
+
+.resolve-login__error {
+  margin: 0 0 1.4em;
+  padding: 1.2em 1.4em;
+  border: 1px solid #fecaca;
+  border-radius: 1.1em;
+  color: #991b1b;
+  background: #fff1f2;
+  font-size: 1.3em;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.resolve-login__access-divider {
+  display: flex;
+  align-items: center;
+  gap: 1.6em;
+  margin: 2.8em 0 2.4em;
+}
+
+.resolve-login__access-divider > span {
+  height: 1px;
+  flex: 1;
+  background: #e3e8f5;
+}
+
+.resolve-login__access-divider > p {
+  flex-shrink: 0;
+  margin: 0;
+  color: #6f7fa6;
+  font-size: 1em;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+}
+
+.resolve-login__register {
+  margin: 0;
+  color: #6b7aa3;
+  font-size: 1.5em;
+  text-align: center;
+}
+
+.resolve-login__register a {
+  color: #1238ce;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.resolve-login__register a:hover {
+  color: #0b27a0;
+}
+
+.resolve-login__mobile-footer {
+  display: none;
+}
+
+/* ============================================================
+   STACKED LAYOUT — narrow windows and high zoom levels
+   (normal px sizes from here on)
+   ============================================================ */
+
+@media (max-width: 1024px) {
+  .resolve-login {
+    display: block;
+    height: auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow: visible;
+    font-size: 16px;
+  }
+
+  .resolve-login__backdrop {
+    position: fixed;
+  }
+
+  .resolve-login__curves {
+    display: none;
+  }
+
+  .resolve-login__layout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 28px;
+    width: 100%;
+    height: auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: 30px 18px 24px;
+  }
+
+  .resolve-login__intro {
+    width: 100%;
+    max-width: 510px;
+    align-self: auto;
+    padding-top: 0;
+  }
+
+  .resolve-login__brand {
+    gap: 14px;
+  }
+
+  .resolve-login__brand-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 13px;
+  }
+
+  .resolve-login__brand-icon svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .resolve-login__brand-name {
+    font-size: 29px;
+  }
+
+  .resolve-login__eyebrow {
+    margin: 17px 0 13px;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+  }
+
+  .resolve-login__headline {
+    font-size: clamp(31px, 8vw, 43px);
+    white-space: normal;
+  }
+
+  .resolve-login__description {
+    max-width: none;
+    margin: 13px 0 0;
+    font-size: 14px;
+    line-height: 1.65;
+  }
+
+  .resolve-login__features,
+  .resolve-login__trust,
+  .resolve-login__showcase {
+    display: none;
+  }
+
+  .resolve-login__form-area {
+    width: 100%;
+    max-width: 510px;
+    align-self: auto;
+    margin-top: 0;
+    padding-left: 0;
+  }
+
+  .resolve-login__card {
+    padding: 26px 22px;
+    border-radius: 22px;
+  }
+
+  .resolve-login__card-brand-row {
+    gap: 12px;
+  }
+
+  .resolve-login__card-logo {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+  }
+
+  .resolve-login__card-logo svg {
+    width: 26px;
+    height: 26px;
+  }
+
+  .resolve-login__card-brand-name {
+    font-size: 25px;
+  }
+
+  .resolve-login__card-brand > p {
+    margin-top: 8px;
+    font-size: 9px;
+  }
+
+  .resolve-login__separator {
+    margin: 19px 0;
+  }
+
+  .resolve-login__welcome {
+    margin-bottom: 20px;
+  }
+
+  .resolve-login__welcome h2 {
+    font-size: 28px;
+  }
+
+  .resolve-login__welcome > p {
+    font-size: 14px;
+  }
+
+  .resolve-login__form {
+    gap: 8px;
+  }
+
+  .resolve-login__label {
+    font-size: 13px;
+  }
+
+  .resolve-login__label:not(:first-child) {
+    margin-top: 6px;
+  }
+
+  .resolve-login__input-wrap {
+    gap: 12px;
+    min-height: 50px;
+    padding: 0 14px;
+    border-radius: 12px;
+  }
+
+  .resolve-login__input-wrap > svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .resolve-login__input-wrap input {
+    min-height: 46px;
+    font-size: 15px;
+  }
+
+  .resolve-login__password-toggle {
+    flex-basis: 32px;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+  }
+
+  .resolve-login__password-toggle svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .resolve-login__submit {
+    gap: 10px;
+    min-height: 52px;
+    margin-top: 12px;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-size: 15px;
+  }
+
+  .resolve-login__submit svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .resolve-login__error {
+    font-size: 13px;
+  }
+
+  .resolve-login__access-divider {
+    gap: 12px;
+    margin: 22px 0 18px;
+  }
+
+  .resolve-login__access-divider > p {
+    font-size: 9px;
+  }
+
+  .resolve-login__register {
+    font-size: 13px;
+  }
+
+  .resolve-login__mobile-footer {
+    display: block;
+    margin: 17px 0 0;
+    color: #b6c8ef;
+    font-size: 11px;
+    text-align: center;
+  }
+}
+
+@media (max-width: 380px) {
+  .resolve-login__layout {
+    padding-inline: 12px;
+  }
+
+  .resolve-login__card {
+    padding: 23px 17px;
+  }
+
+  .resolve-login__headline {
+    font-size: 30px;
+  }
+
+  .resolve-login__access-divider > p {
+    font-size: 8px;
+    letter-spacing: 0.12em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .resolve-login *,
+  .resolve-login *::before,
+  .resolve-login *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

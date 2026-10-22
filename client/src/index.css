@@ -1,0 +1,127 @@
+
+/* --------------------------- SLA BADGES --------------------------- */
+
+.sla-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.sla-dot {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.sla-within {
+  color: #166534;
+  background: #dcfce7;
+}
+
+.sla-overdue {
+  color: #991b1b;
+  background: #fee2e2;
+}
+
+.sla-completed {
+  color: #1d4ed8;
+  background: #dbeafe;
+}
+
+.sla-overview {
+  margin: 28px 0;
+}
+
+.sla-overview .section-heading {
+  margin-bottom: 16px;
+}
+
+.sla-overview .stats-grid {
+  margin-top: 0;
+}
+
+.ticket-card {
+  padding: 18px;
+  margin-bottom: 14px;
+}
+
+.ticket-card-header,
+.activity-heading,
+.comment-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.ticket-detail-summary {
+  padding: 16px;
+  margin-bottom: 22px;
+}
+
+.ticket-detail-badges {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.activity-section {
+  margin-bottom: 24px;
+}
+
+.activity-list,
+.comment-list {
+  display: grid;
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.activity-item,
+.comment-item {
+  padding: 12px 14px;
+}
+
+.activity-item p,
+.comment-item p {
+  overflow-wrap: anywhere;
+}
+
+.page-intro {
+  margin-bottom: 18px;
+}
+
+.page-intro .eyebrow {
+  margin-bottom: 6px;
+}
+
+.page-intro > .muted {
+  margin-top: 0;
+}
+
+@media (max-width: 640px) {
+  .sla-badge {
+    font-size: 11px;
+    padding: 5px 8px;
+  }
+
+  .ticket-detail-badges {
+    align-items: flex-start;
+  }
+
+  .activity-heading,
+  .comment-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
