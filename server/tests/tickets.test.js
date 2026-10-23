@@ -391,3 +391,231 @@ describe('ResolveIT ticket API security', () => {
     });
   });
 });
+
+
+describe('ResolveIT API regression coverage', () => {
+  describe('Ticket listing and pagination', () => {
+    it('returns pagination metadata for an employee', async () => {
+      const response = await request(app)
+        .get('/api/tickets?page=1&limit=10')
+        .set(auth(employee));
+
+      expect(response.status).toBe(200);
+      expect(response.body.data).toBeInstanceOf(Array);
+      expect(response.body.pagination).toMatchObject({
+        page: 1,
+        limit: 10,
+        total: 1,
+        pages: 1,
+      });
+    });
+
+    it('filters tickets by priority', async () => {
+      await createTicket({
+        title: 'Network connectivity issue',
+        description: 'The office network is unavailable.',
+        priority: 'High',
+      });
+
+      const response = await request(app)
+        .get('/api/tickets?priority=High')
+        .set(auth(employee));
+
+      expect(response.status).toBe(200);
+      expect(response.body.data.length).toBe(1);
+      expect(response.body.data[0].priority).toBe('High');
+    });
+
+    it('rejects invalid pagination parameters', async () => {
+      const response = await request(app)
+        .get('/api/tickets?page=0&limit=500')
+        .set(auth(employee));
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe('Invalid input.');
+    });
+
+    it('rejects malformed ticket IDs', async () => {
+      const response = await request(app)
+        .get('/api/tickets/not-a-valid-id')
+        .set(auth(employee));
+
+      expect(response.status).toBe(400);
+    });
+  });
+
+  describe('Comments and audit history', () => {
+    it('allows an authorized employee to comment on their ticket', async () => {
+      const response = await request(app)
+        .post(`/api/tickets/${ticket._id}/comments`)
+        .set(auth(employee))
+        .send({ body: 'I have restarted the laptop.' });
+
+      expect(response.status).toBe(201);
+      expect(response.body.data.body).toBe(
+        'I have restarted the laptop.'
+      );
+    });
+
+    it('prevents another employee from commenting on the ticket', async () => {
+      const response = await request(app)
+        .post(`/api/tickets/${ticket._id}/comments`)
+        .set(auth(anotherEmployee))
+        .send({ body: 'Unauthorized comment' });
+
+      expect(response.status).toBe(403);
+    });
+
+    it('rejects empty comments', async () => {
+      const response = await request(app)
+        .post(`/api/tickets/${ticket._id}/comments`)
+        .set(auth(employee))
+        .send({ body: '   ' });
+
+      expect(response.status).toBe(400);
+    });
+
+    it('returns comments and audit history with ticket details', async () => {
+      await request(app)
+        .post(`/api/tickets/${ticket._id}/comments`)
+        .set(auth(employee))
+        .send({ body: 'Please investigate this issue.' });
+
+      const response = await request(app)
+        .get(`/api/tickets/${ticket._id}`)
+        .set(auth(employee));
+
+      expect(response.status).toBe(200);
+      expect(response.body.comments).toHaveLength(1);
+      expect(response.body.comments[0].body).toBe(
+        'Please investigate this issue.'
+      );
+      expect(response.body.history.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('SLA and workflow regression', () => {
+    it('reports a ticket as within SLA before its deadline', async () => {
+      const response = await request(app)
+        .get(`/api/tickets/${ticket._id}`)
+        .set(auth(employee));
+
+      expect(response.status).toBe(200);
+      expect(response.body.data.slaStatus).toBe('Within SLA');
+    });
+
+    it('reports an overdue ticket correctly', async () => {
+      ticket.dueAt = new Date(Date.now() - 60_000);
+      await ticket.save();
+
+      const response = await request(app)
+        .get(`/api/tickets/${ticket._id}`)
+        .set(auth(employee));
+
+      expect(response.status).toBe(200);
+      expect(response.body.data.slaStatus).toBe('Overdue');
+    });
+
+    it('records an audit entry when an agent changes status', async () => {
+      const response = await request(app)
+        .patch(`/api/tickets/${ticket._id}`)
+        .set(auth(agent))
+        .send({ status: 'In Progress' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.data.status).toBe('In Progress');
+
+      const details = await request(app)
+        .get(`/api/tickets/${ticket._id}`)
+        .set(auth(employee));
+
+      expect(details.status).toBe(200);
+      expect(
+        details.body.history.some(
+          (entry) => entry.action === 'Status changed'
+        )
+      ).toBe(true);
+    });
+  });
+});
+
+describe('ResolveIT ticket workflow edge cases', () => {
+  it('rejects an invalid status transition', async () => {
+    const response = await request(app)
+      .patch(`/api/tickets/${ticket._id}`)
+      .set(auth(agent))
+      .send({ status: 'Closed' });
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toContain(
+      'Invalid status transition'
+    );
+  });
+
+  it('rejects updates from an agent not assigned to the ticket', async () => {
+    const response = await request(app)
+      .patch(`/api/tickets/${ticket._id}`)
+      .set(auth(anotherAgent))
+      .send({ status: 'In Progress' });
+
+    expect(response.status).toBe(403);
+    expect(response.body.message).toContain(
+      'assigned to you'
+    );
+  });
+
+  it('rejects an empty ticket update', async () => {
+    const response = await request(app)
+      .patch(`/api/tickets/${ticket._id}`)
+      .set(auth(admin))
+      .send({});
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe(
+      'Provide at least one field to update.'
+    );
+  });
+
+  it('rejects assigning a ticket to an employee', async () => {
+    const response = await request(app)
+      .patch(`/api/tickets/${ticket._id}`)
+      .set(auth(admin))
+      .send({ assignedTo: employee._id.toString() });
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toContain(
+      'agent or administrator'
+    );
+  });
+
+  it('recalculates the SLA deadline when priority changes', async () => {
+    const previousDeadline = new Date(ticket.dueAt).getTime();
+
+    const response = await request(app)
+      .patch(`/api/tickets/${ticket._id}`)
+      .set(auth(agent))
+      .send({ priority: 'Critical' });
+
+    expect(response.status).toBe(200);
+
+    const updatedDeadline = new Date(
+      response.body.data.dueAt
+    ).getTime();
+
+    expect(updatedDeadline).toBeGreaterThan(Date.now());
+    expect(updatedDeadline - Date.now()).toBeLessThanOrEqual(
+      4 * 60 * 60 * 1000
+    );
+    expect(updatedDeadline).not.toBe(previousDeadline);
+
+    const auditEntries = await AuditLog.find({
+      ticket: ticket._id
+    });
+
+    expect(
+      auditEntries.some(
+        (entry) => entry.action === 'SLA deadline updated'
+      )
+    ).toBe(true);
+  });
+});

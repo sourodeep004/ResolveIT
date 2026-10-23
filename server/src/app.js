@@ -1,4 +1,3 @@
-
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
@@ -14,6 +13,7 @@ import { notFound, errorHandler } from './middleware/errors.js';
 const app = express();
 
 const isTest = process.env.NODE_ENV === 'test';
+const isBenchmark = process.env.BENCHMARK_MODE === 'true';
 
 const rateLimitWindowMs = Number(
   process.env.RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000
@@ -21,6 +21,10 @@ const rateLimitWindowMs = Number(
 
 const rateLimitMax = Number(
   process.env.RATE_LIMIT_MAX || 300
+);
+
+const benchmarkRateLimitMax = Number(
+  process.env.BENCHMARK_RATE_LIMIT_MAX || 1000
 );
 
 app.disable('x-powered-by');
@@ -43,13 +47,17 @@ if (!isTest) {
 }
 
 // Apply API rate limiting.
-// Tests can bypass the limiter without changing production behavior.
+// Tests bypass the limiter.
+// Benchmark mode uses a separate configurable limit.
+// Normal development and production retain the standard limit.
 if (!isTest) {
   app.use(
     '/api',
     rateLimit({
       windowMs: rateLimitWindowMs,
-      limit: rateLimitMax,
+      limit: isBenchmark
+        ? benchmarkRateLimitMax
+        : rateLimitMax,
       standardHeaders: 'draft-7',
       legacyHeaders: false,
       message: {

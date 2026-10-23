@@ -18,7 +18,7 @@ const STATUSES = [
   'In Progress',
   'Pending',
   'Resolved',
-  'Closed'
+  'Closed',
 ];
 
 const PRIORITIES = ['Low', 'Medium', 'High', 'Critical'];
@@ -28,7 +28,7 @@ const CATEGORIES = [
   'Software',
   'Network',
   'Access',
-  'Other'
+  'Other',
 ];
 
 // SLA targets in calendar hours.
@@ -36,7 +36,7 @@ const SLA_HOURS = {
   Critical: 4,
   High: 8,
   Medium: 24,
-  Low: 72
+  Low: 72,
 };
 
 function calculateSlaDueAt(priority, from = new Date()) {
@@ -49,7 +49,7 @@ function calculateSlaDueAt(priority, from = new Date()) {
   return new Date(from.getTime() + hours * 60 * 60 * 1000);
 }
 
-// Add an SLA deadline to older tickets that do not have one.
+// Backfill missing SLA deadlines for individual ticket operations.
 // Preserve existing deadlines.
 async function ensureSlaDeadline(ticket) {
   if (!ticket.dueAt) {
@@ -79,12 +79,22 @@ function getSlaStatus(ticket, now = new Date()) {
   return 'Within SLA';
 }
 
-// Always include slaStatus in serialized ticket responses.
+// Serialize either a Mongoose document or a lean object.
+// For legacy tickets without dueAt, calculate a response-only fallback.
+// Do not write to MongoDB from the list endpoint.
 function serializeTicket(ticket) {
   const data =
     typeof ticket.toObject === 'function'
       ? ticket.toObject()
       : { ...ticket };
+
+  if (!data.dueAt && data.priority) {
+    const baseDate = data.createdAt
+      ? new Date(data.createdAt)
+      : new Date();
+
+    data.dueAt = calculateSlaDueAt(data.priority, baseDate);
+  }
 
   data.slaStatus = getSlaStatus(data);
 
@@ -97,7 +107,7 @@ const validate = (req, res, next) => {
   if (!errors.isEmpty()) {
     return res.status(400).json({
       message: 'Invalid input.',
-      errors: errors.array()
+      errors: errors.array(),
     });
   }
 
@@ -132,7 +142,7 @@ const transitions = {
   'In Progress': ['Pending', 'Resolved'],
   Pending: ['In Progress', 'Resolved'],
   Resolved: ['Closed', 'In Progress'],
-  Closed: []
+  Closed: [],
 };
 
 function canTransition(from, to, role) {
@@ -150,7 +160,7 @@ async function writeAudit(ticketId, actorId, action, details) {
     ticket: ticketId,
     actor: actorId,
     action,
-    details
+    details,
   });
 }
 
@@ -162,7 +172,7 @@ router.get(
   async (req, res, next) => {
     try {
       const agents = await User.find({
-        role: { $in: ['agent', 'admin'] }
+        role: { $in: ['agent', 'admin'] },
       }).select('name email role');
 
       return res.json({ data: agents });
@@ -196,7 +206,7 @@ router.get(
         filter.priority = req.query.priority;
       }
 
-      // Role-based ticket visibility.
+      // Enforce role-based ticket visibility.
       if (req.user.role === 'employee') {
         filter.createdBy = req.user._id;
       } else if (req.user.role === 'agent') {
@@ -205,25 +215,26 @@ router.get(
 
       if (req.query.search?.trim()) {
         filter.$text = {
-          $search: req.query.search.trim()
+          $search: req.query.search.trim(),
         };
       }
 
+      // Run ticket retrieval and count concurrently.
+      // Projection and lean() reduce list-query overhead.
       const [tickets, total] = await Promise.all([
         Ticket.find(filter)
+          .select(
+            'title description category priority status createdBy assignedTo dueAt resolvedAt createdAt updatedAt'
+          )
           .populate('createdBy', 'name email')
           .populate('assignedTo', 'name email')
-          .sort({ createdAt: -1 })
+          .sort({ createdAt: -1, _id: -1 })
           .skip((page - 1) * limit)
-          .limit(limit),
+          .limit(limit)
+          .lean(),
 
-        Ticket.countDocuments(filter)
+        Ticket.countDocuments(filter),
       ]);
-
-      // Backfill missing deadlines on existing tickets.
-      for (const ticket of tickets) {
-        await ensureSlaDeadline(ticket);
-      }
 
       return res.json({
         data: tickets.map((ticket) => serializeTicket(ticket)),
@@ -231,8 +242,8 @@ router.get(
           page,
           limit,
           total,
-          pages: Math.ceil(total / limit)
-        }
+          pages: Math.ceil(total / limit),
+        },
       });
     } catch (err) {
       next(err);
@@ -259,7 +270,7 @@ router.post(
         category: req.body.category || 'Other',
         priority,
         createdBy: req.user._id,
-        dueAt: calculateSlaDueAt(priority)
+        dueAt: calculateSlaDueAt(priority),
       });
 
       await writeAudit(
@@ -272,7 +283,7 @@ router.post(
       await ticket.populate('createdBy', 'name email');
 
       return res.status(201).json({
-        data: serializeTicket(ticket)
+        data: serializeTicket(ticket),
       });
     } catch (err) {
       next(err);
@@ -294,13 +305,13 @@ router.get(
 
       if (!ticket) {
         return res.status(404).json({
-          message: 'Ticket not found.'
+          message: 'Ticket not found.',
         });
       }
 
       if (!canView(ticket, req.user)) {
         return res.status(403).json({
-          message: 'You cannot view this ticket.'
+          message: 'You cannot view this ticket.',
         });
       }
 
@@ -313,13 +324,13 @@ router.get(
 
         AuditLog.find({ ticket: ticket._id })
           .populate('actor', 'name role')
-          .sort({ createdAt: -1 })
+          .sort({ createdAt: -1 }),
       ]);
 
       return res.json({
         data: serializeTicket(ticket),
         comments,
-        history
+        history,
       });
     } catch (err) {
       next(err);
@@ -328,7 +339,7 @@ router.get(
 );
 
 // PATCH /api/tickets/:id
-// Update ticket fields, enforce role permissions and recalculate SLA.
+// Update fields, enforce permissions and recalculate SLA.
 router.patch(
   '/:id',
   param('id').isMongoId(),
@@ -338,7 +349,6 @@ router.patch(
   body('assignedTo')
     .optional({ nullable: true })
     .custom((value) => {
-      // Accept null or an empty string to unassign a ticket.
       if (value === null || value === '') return true;
 
       return mongoose.Types.ObjectId.isValid(value);
@@ -352,7 +362,7 @@ router.patch(
 
       if (!ticket) {
         return res.status(404).json({
-          message: 'Ticket not found.'
+          message: 'Ticket not found.',
         });
       }
 
@@ -360,7 +370,7 @@ router.patch(
 
       if (changes.length === 0) {
         return res.status(400).json({
-          message: 'Provide at least one field to update.'
+          message: 'Provide at least one field to update.',
         });
       }
 
@@ -369,7 +379,7 @@ router.patch(
       if (role === 'employee') {
         if (!sameId(ticket.createdBy, req.user._id)) {
           return res.status(403).json({
-            message: 'You cannot update this ticket.'
+            message: 'You cannot update this ticket.',
           });
         }
 
@@ -377,13 +387,13 @@ router.patch(
 
         if (changes.some((key) => !allowed.includes(key))) {
           return res.status(403).json({
-            message: 'Employees can only edit their ticket details.'
+            message: 'Employees can only edit their ticket details.',
           });
         }
       } else if (role === 'agent') {
         if (!sameId(ticket.assignedTo, req.user._id)) {
           return res.status(403).json({
-            message: 'You can only update tickets assigned to you.'
+            message: 'You can only update tickets assigned to you.',
           });
         }
 
@@ -391,12 +401,12 @@ router.patch(
 
         if (changes.some((key) => !allowed.includes(key))) {
           return res.status(403).json({
-            message: 'Agents can update status and priority only.'
+            message: 'Agents can update status and priority only.',
           });
         }
       } else if (role !== 'admin') {
         return res.status(403).json({
-          message: 'You do not have permission to update tickets.'
+          message: 'You do not have permission to update tickets.',
         });
       }
 
@@ -405,7 +415,7 @@ router.patch(
         role !== 'admin'
       ) {
         return res.status(403).json({
-          message: 'Only administrators can assign tickets.'
+          message: 'Only administrators can assign tickets.',
         });
       }
 
@@ -423,18 +433,19 @@ router.patch(
       ) {
         const assigneeExists = await User.exists({
           _id: req.body.assignedTo,
-          role: { $in: ['agent', 'admin'] }
+          role: { $in: ['agent', 'admin'] },
         });
 
         if (!assigneeExists) {
           return res.status(400).json({
             message:
-              'Tickets can only be assigned to an agent or administrator.'
+              'Tickets can only be assigned to an agent or administrator.',
           });
         }
       }
 
-      // Ensure an existing ticket has a deadline before updating it.
+      // Ensure a deadline exists before updating a legacy ticket,
+      // unless the priority change will recalculate it below.
       if (
         !ticket.dueAt &&
         !(
@@ -451,7 +462,7 @@ router.patch(
       ) {
         return res.status(400).json({
           message:
-            `Invalid status transition: ${ticket.status} -> ${req.body.status}.`
+            `Invalid status transition: ${ticket.status} -> ${req.body.status}.`,
         });
       }
 
@@ -484,11 +495,11 @@ router.patch(
                   : 'Ticket field updated',
 
           details:
-            `${field}: ${previousValue ?? 'none'} -> ${nextComparable ?? 'none'}`
+            `${field}: ${previousValue ?? 'none'} -> ${nextComparable ?? 'none'}`,
         });
       }
 
-      // Recalculate deadline when the priority changes.
+      // Recalculate the deadline when priority changes.
       if (
         req.body.priority &&
         req.body.priority !== previousPriority
@@ -499,7 +510,7 @@ router.patch(
           action: 'SLA deadline updated',
           details:
             `dueAt recalculated for ${req.body.priority} priority ` +
-            `(${SLA_HOURS[req.body.priority]} calendar hours)`
+            `(${SLA_HOURS[req.body.priority]} calendar hours)`,
         });
       }
 
@@ -528,11 +539,11 @@ router.patch(
 
       await ticket.populate([
         { path: 'createdBy', select: 'name email' },
-        { path: 'assignedTo', select: 'name email' }
+        { path: 'assignedTo', select: 'name email' },
       ]);
 
       return res.json({
-        data: serializeTicket(ticket)
+        data: serializeTicket(ticket),
       });
     } catch (err) {
       next(err);
@@ -553,20 +564,20 @@ router.post(
 
       if (!ticket) {
         return res.status(404).json({
-          message: 'Ticket not found.'
+          message: 'Ticket not found.',
         });
       }
 
       if (!canView(ticket, req.user)) {
         return res.status(403).json({
-          message: 'You cannot comment on this ticket.'
+          message: 'You cannot comment on this ticket.',
         });
       }
 
       const comment = await Comment.create({
         ticket: ticket._id,
         author: req.user._id,
-        body: req.body.body
+        body: req.body.body,
       });
 
       await writeAudit(
@@ -579,7 +590,7 @@ router.post(
       await comment.populate('author', 'name role');
 
       return res.status(201).json({
-        data: comment
+        data: comment,
       });
     } catch (err) {
       next(err);
