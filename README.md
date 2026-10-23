@@ -263,8 +263,8 @@ The project includes separate frontend and backend responsibilities. The precise
 
 ```text
 ResolveIT/
-├── client/                  # React frontend, if separated
-├── server/                  # Express backend, if separated
+├── client/                  # React frontend 
+├── server/                  # Express backend
 │   ├── scripts/
 │   │   └── benchmark-tickets.js
 │   └── ...
