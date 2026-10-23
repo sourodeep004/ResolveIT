@@ -1,233 +1,315 @@
-# ResolveIT --- IT Service Management Platform
+# ResolveIT — IT Service Management Platform
 
-ResolveIT is a role-based IT service management platform for managing
-internal support tickets. It supports employees, agents, and
-administrators with ticket workflows, priority-based SLA deadlines,
-authentication, and analytics.
+**ResolveIT** is a full-stack IT Service Management (ITSM) application designed to make handling IT support requests more organized. Employees can raise tickets, support agents can manage and resolve them, and administrators can oversee the workflow through role-based access.
 
-## Features
+## 🔗 Live Demo
 
--   **JWT authentication:** Register and log in securely.
--   **Role-based access:** Employee, agent, and admin roles.
--   **Ticket management:** Create and track support tickets with
-    categories, priorities, and statuses.
--   **Assignment and workflow:** Assign tickets to support staff and
-    update ticket status.
--   **Priority-based SLA targets:** Critical --- 4 hours; High --- 8
-    hours; Medium --- 24 hours; Low --- 72 hours.
--   **Analytics API:** Ticket summary metrics, status/category
-    breakdowns, and average resolution time for authorized agents and
-    administrators.
--   **API security:** Helmet security headers, CORS configuration,
-    request-size limits, and rate limiting.
--   **Automated testing:** Vitest and Supertest.
--   **Coverage reporting:** Vitest with V8 coverage.
--   **Preliminary performance testing:** Autocannon.
+- **Live Application:** https://resolveit-zeta.vercel.app
+- **Backend API:** https://resolveit-api-qf9p.onrender.com
+- **API Health Check:** https://resolveit-api-qf9p.onrender.com/api/health
+- **GitHub Repository:** https://github.com/sourodeep004/ResolveIT
 
-## Tech Stack
+> Note: The backend is hosted separately from the frontend. The first request may take longer if the hosting service has put the backend to sleep.
 
-  Area             Technologies
-  ---------------- ------------------------------------------
-  Frontend         React, Vite
-  Backend          Node.js, Express.js
-  Database         MongoDB, Mongoose
-  Authentication   JWT, bcryptjs
-  Validation       express-validator
-  Security         Helmet, CORS, express-rate-limit
-  Testing          Vitest, Supertest, mongodb-memory-server
-  Coverage         @vitest/coverage-v8
-  Load testing     Autocannon
+## ✨ Features
 
-## Project Structure
+- **Role-Based Access Control:** Separate permissions for employees, support agents, and administrators.
+- **Ticket Management:** Create, view, update, assign, and track IT support tickets.
+- **Ticket Lifecycle:** Manage ticket statuses and follow the workflow from reporting an issue to resolution.
+- **Priority and Categories:** Organize tickets by priority and issue category.
+- **SLA Tracking:** Calculate ticket deadlines based on priority, with configured SLA targets ranging from 4 to 72 hours.
+- **Comments and Collaboration:** Add comments to tickets to keep communication and troubleshooting details in one place.
+- **Audit History:** Maintain a history of ticket-related actions for better traceability.
+- **Protected API Routes:** Use JWT authentication to secure application endpoints.
+- **Input Validation:** Validate incoming API requests to reduce invalid data and unexpected behavior.
+- **API Rate Limiting:** Apply request limits to help protect the backend from excessive traffic.
+- **Centralized Error Handling:** Handle API errors consistently.
+- **Automated Testing:** Test backend API behavior using Vitest and Supertest.
+- **Performance Benchmarking:** Use Autocannon to measure ticket API throughput, latency, and failed requests.
 
-``` text
-resolveit/
-├── client/                 # React + Vite frontend
-├── server/
-│   ├── src/
-│   │   ├── config/         # Database configuration
-│   │   ├── middleware/     # Authentication and error handling
-│   │   ├── models/         # Mongoose models
-│   │   ├── routes/         # Authentication, tickets, analytics
-│   │   ├── app.js
-│   │   └── server.js
-│   └── package.json
-├── screenshots/            # Project screenshots
-└── README.md
+## 🛠️ Tech Stack
+
+| Area | Technologies |
+|---|---|
+| Frontend | React.js, Vite |
+| Backend | Node.js, Express.js |
+| Database | MongoDB, Mongoose |
+| Authentication | JSON Web Tokens (JWT) |
+| API Testing | Vitest, Supertest |
+| Performance Testing | Autocannon |
+| Frontend Deployment | Vercel |
+| Backend Deployment | Render |
+| Version Control | Git, GitHub |
+
+## 🏗️ Architecture
+
+```text
+              User
+               |
+               v
+       React.js Frontend
+          (Vercel)
+               |
+          HTTP / REST API
+               |
+               v
+       Express.js Backend
+           (Render)
+               |
+     +---------+----------+
+     |         |          |
+     v         v          v
+ Authentication Ticket   Validation
+    (JWT)     Routes
+               |
+               v
+        MongoDB Database
 ```
 
-## Prerequisites
+The frontend communicates with the backend through REST API endpoints. The backend validates requests, checks authentication and authorization, executes ticket operations, and stores application data in MongoDB.
 
--   Node.js and npm
--   MongoDB (local or hosted)
--   Git
+## 👥 User Roles
 
-## Local Setup
+### Employee
+- Create support tickets.
+- View and track submitted tickets.
+- Follow ticket updates and comments.
 
-### 1. Clone the repository
+### Support Agent
+- View tickets assigned to them.
+- Update ticket status and work toward resolution.
+- Communicate through ticket comments.
 
-``` bash
-git clone <YOUR_GITHUB_REPOSITORY_URL>
-cd resolveit
+### Administrator
+- Access administrative functionality permitted by the application.
+- Manage ticket assignments and oversee support workflows.
+
+## 🚀 Getting Started
+
+Follow these steps to run ResolveIT locally.
+
+### Prerequisites
+
+Install the following:
+
+- Node.js and npm
+- MongoDB, either locally or through MongoDB Atlas
+- Git
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/sourodeep004/ResolveIT.git
+cd ResolveIT
 ```
 
-### 2. Configure the backend
+### 2. Install Dependencies
 
-``` bash
-cd server
+Check the repository structure to identify the frontend and backend directories. Run `npm install` in each application directory that has its own `package.json`.
+
+For a single-package setup, run:
+
+```bash
 npm install
 ```
 
-Create `server/.env` and set the following values:
+### 3. Configure Environment Variables
 
-``` dotenv
-PORT=5000
+Create the appropriate `.env` files for the backend and frontend, following the environment variable names used by the project.
+
+**Backend configuration:**
+
+```env
 MONGODB_URI=your_mongodb_connection_string
-JWT_SECRET=replace_with_a_long_random_secret_at_least_32_characters
+JWT_SECRET=your_long_random_secret
 CLIENT_URL=http://localhost:5173
+NODE_ENV=development
 ```
 
-Keep real credentials in `.env`. Never commit `.env` or put database
-credentials or JWT secrets in this README.
+**Frontend configuration:**
 
-### 3. Start the backend
-
-``` bash
-npm run dev
+```env
+VITE_API_URL=http://localhost:5000/api
 ```
 
-The API should start at `http://localhost:5000` after connecting to
-MongoDB.
+Use the actual backend port configured in your application if it differs from `5000`.
 
-Health check: `GET http://localhost:5000/api/health`
+For production, configure `VITE_API_URL` with:
 
-Expected response:
-
-``` json
-{
-  "status": "ok",
-  "service": "ResolveIT API"
-}
+```env
+VITE_API_URL=https://resolveit-api-qf9p.onrender.com/api
 ```
 
-### 4. Configure and start the frontend
+**Important:** Never commit real database credentials, JWT secrets, or production environment files to GitHub. Add `.env` to `.gitignore`.
 
-Open a second terminal:
+### 4. Start the Backend
 
-``` bash
-cd client
+Navigate to the backend directory and run the development or start command defined in its `package.json`.
+
+For example:
+
+```bash
 npm install
+npm start
 ```
 
-If the frontend reads `VITE_API_URL`, create `client/.env`:
+If the project uses a separate development script, use the corresponding command from its `package.json`.
 
-``` dotenv
-VITE_API_URL=http://localhost:5000
-```
+### 5. Start the Frontend
 
-Set this variable to the exact base URL expected by your frontend API
-client. Then run:
+In a separate terminal, navigate to the frontend directory and run:
 
-``` bash
+```bash
+npm install
 npm run dev
 ```
 
-Open the local URL printed by Vite, typically `http://localhost:5173`.
+Open the local URL printed by Vite, commonly:
 
-## Automated Tests
+```text
+http://localhost:5173
+```
 
-From the `server` directory:
+Make sure the frontend's `VITE_API_URL` points to the running backend.
 
-``` bash
+## 🔐 Environment Variables
+
+| Variable | Purpose |
+|---|---|
+| `MONGODB_URI` | MongoDB connection string |
+| `JWT_SECRET` | Secret used to sign and verify JWTs |
+| `CLIENT_URL` | Frontend origin used for backend CORS configuration |
+| `NODE_ENV` | Application environment |
+| `VITE_API_URL` | Backend API base URL used by the frontend |
+
+Keep secrets private and use separate development and production values.
+
+## 🧪 Testing
+
+ResolveIT uses Vitest and Supertest to test backend API behavior.
+
+Run the test suite from the directory containing the relevant `package.json`:
+
+```bash
 npm test
+```
+
+Run tests in watch mode:
+
+```bash
+npm run test:watch
+```
+
+Generate a coverage report:
+
+```bash
 npm run test:coverage
 ```
 
-The HTML coverage report is generated under `server/coverage/`; open
-`server/coverage/index.html` in a browser.
+The coverage report helps identify untested code paths and areas where additional tests may be useful.
 
-The latest captured report during development showed:
+## ⚡ API Performance Testing
 
-  Metric         Coverage
-  ------------ ----------
-  Statements       76.51%
-  Branches         65.94%
-  Functions        88.88%
-  Lines            77.32%
+Autocannon is used to benchmark the ticket API under concurrent requests.
 
-Coverage can change when code or tests change. Re-run the command before
-publishing updated figures.
+The benchmark script is available at:
 
-## API Overview
-
-  --------------------------------------------------------------------------
-  Method                  Endpoint                   Purpose
-  ----------------------- -------------------------- -----------------------
-  GET                     `/api/health`              Health check
-
-  POST                    `/api/auth/register`       Register an account
-
-  POST                    `/api/auth/login`          Log in
-
-  GET                     `/api/auth/me`             Get the authenticated
-                                                     user's profile
-
-  ---                     `/api/tickets`             Ticket operations; see
-                                                     route implementation
-                                                     for supported methods
-
-  GET                     `/api/analytics/summary`   Analytics summary for
-                                                     authorized
-                                                     agents/admins
-  --------------------------------------------------------------------------
-
-Protected endpoints use a bearer token:
-
-``` http
-Authorization: Bearer <JWT_TOKEN>
+```text
+server/scripts/benchmark-tickets.js
 ```
 
-Check the route files for exact ticket endpoints, request bodies, and
-permissions.
+Run it from the backend directory, adjusting the path if your repository structure differs:
 
-## Screenshots
-
-Add only screenshots that exist and show implemented features. For
-example:
-
-``` text
-screenshots/
-├── 01-login.png
-├── 02-dashboard.png
-├── 03-ticket-management.png
-├── 04-ticket-details.png
-└── 07-test-coverage.png
+```bash
+node ./scripts/benchmark-tickets.js
 ```
 
-Embed an image using Markdown:
+Example configuration in PowerShell:
 
-``` markdown
-![Test coverage report](./screenshots/07-test-coverage.png)
+```powershell
+$env:BENCH_DURATION = "20"
+$env:BENCH_CONNECTIONS = "10"
+node .\scripts\benchmark-tickets.js
 ```
 
-## Security Notes
+The benchmark can measure:
 
--   Use a unique, randomly generated `JWT_SECRET` of at least 32
-    characters.
--   Never commit `.env` files, access tokens, database URLs, or
-    production credentials.
--   Configure `CLIENT_URL` for the intended frontend origin(s).
--   Treat load-test results as preliminary unless repeated under
-    controlled conditions with successful HTTP responses.
+- Requests per second
+- Average latency
+- Median latency (p50)
+- Higher-percentile latency (such as p97.5 and p99, when reported)
+- Total requests
+- Non-2xx responses
+- Errors and timeouts
 
-## Project Status
+For meaningful comparisons, use the same duration, connection count, dataset, and environment before and after a change. Local benchmark results are useful for evaluating relative performance, but they should not be interpreted as production capacity.
 
-ResolveIT is a portfolio project demonstrating backend API design,
-role-based access control, database modeling, automated testing, and
-preliminary performance testing. Add deployment URLs here after the live
-application has been deployed and verified.
+## 🔌 API Overview
 
-## License
+The backend exposes REST API routes for authentication, ticket management, and analytics.
 
-Add a license before distributing the project publicly. Without a
-license, standard copyright restrictions apply.
+| Route group | Purpose |
+|---|---|
+| `/api/health` | Backend health check |
+| `/api/auth` | Authentication-related operations |
+| `/api/tickets` | Ticket management and workflow |
+| `/api/analytics` | Ticket-related analytics |
+
+For the exact endpoints, request bodies, and response formats, refer to the backend route files and application implementation in the repository.
+
+## 📁 Project Structure
+
+The project includes separate frontend and backend responsibilities. The precise folder names may vary depending on the current repository layout.
+
+```text
+ResolveIT/
+├── client/                  # React frontend, if separated
+├── server/                  # Express backend, if separated
+│   ├── scripts/
+│   │   └── benchmark-tickets.js
+│   └── ...
+├── package.json
+└── README.md
+```
+
+The `client/` and `server/` names above illustrate a common layout; adjust them to match the actual folders in your repository.
+
+## 🔒 Security Considerations
+
+- Keep secrets in environment variables.
+- Protect private endpoints with authentication and role checks.
+- Validate request parameters and user input.
+- Apply rate limiting to API requests.
+- Avoid exposing internal errors or sensitive configuration to clients.
+- Use HTTPS for deployed frontend and backend communication.
+
+## 🎯 What I Learned
+
+Building ResolveIT provided practical experience with:
+
+- Designing and implementing REST APIs.
+- Integrating React, Express, and MongoDB.
+- Implementing JWT authentication and role-based permissions.
+- Modeling ticket workflows, SLA deadlines, and audit history.
+- Writing automated API tests and reviewing coverage.
+- Investigating MongoDB query plans and index usage.
+- Measuring API latency and throughput with load-testing tools.
+- Deploying a full-stack application using Vercel and Render.
+
+## 🛣️ Future Improvements
+
+- Add notifications for ticket assignments and approaching SLA deadlines.
+- Expand automated tests for edge cases and permission boundaries.
+- Add more detailed operational monitoring and structured logging.
+- Evaluate query performance using representative, larger datasets.
+- Introduce pagination and filtering improvements as ticket volume grows.
+
+## 👨‍💻 Author
+
+**Sourodeep Saha**
+
+- GitHub: https://github.com/sourodeep004
+
+---
+
+If you find the project useful, feel free to explore the repository and share feedback.
